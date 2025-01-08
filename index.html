@@ -151,6 +151,7 @@
                     <th>Video</th>
                     <th>Tags</th>
                     <th>Edit</th>
+                    <th>Stop</th>
                 </tr>
             </thead>
             <tbody id="eventsTableBody">
@@ -214,41 +215,34 @@
                     <td>${startTime}</td>
                     <td><a href="${videoUrl}" target="_blank">Watch Video</a></td>
                     <td>${tags.join(', ')}</td>
-                    <td><button onclick="editVideo('${videoUrl}')">Edit</button></td>`;
+                    <td><button onclick="editVideo('${videoUrl}')">Edit</button></td>
+                    <td><button onclick="stopEvent(this, '${data.uri}')">Stop</button></td>`;
                 eventsTableBody.appendChild(newRow);
             } else {
                 console.error('Error creating event:', data);
             }
         });
 
-        document.getElementById('sendMessage').addEventListener('click', function() {
-            const messageInput = document.getElementById('chatInput');
-            const message = messageInput.value;
-            if (message.trim()) {
-                const chatMessages = document.getElementById('chatMessages');
-                const newMessage = document.createElement('p');
-                newMessage.textContent = message;
-                chatMessages.appendChild(newMessage);
-                messageInput.value = '';
+        function stopEvent(button, eventUri) {
+            // Remove the event from the list
+            const row = button.parentNode.parentNode;
+            row.parentNode.removeChild(row);
+            
+            // Remove the live video player if it's the current event
+            const videoContainer = document.getElementById('videoContainer');
+            const iframeSrc = videoContainer.querySelector('iframe').src;
+            if (iframeSrc.includes(eventUri.split('/').pop())) {
+                videoContainer.innerHTML = '';
             }
-        });
 
-        document.getElementById('chatInput').addEventListener('keypress', function(event) {
-            if (event.key === 'Enter') {
-                document.getElementById('sendMessage').click();
-            }
-        });
-
-        async function uploadVideoToServer(file) {
-            // Implement video upload logic here
-            // For now, we'll return a placeholder URL
-            return 'https://example.com/path/to/video.mp4';
-        }
-
-        function editVideo(videoUrl) {
-            // Implement video editing logic here using a video editing library or API
-            alert(`Editing video at URL: ${videoUrl}`);
-        }
-    </script>
-</body>
-</html>
+            // Optionally, send a request to the server to stop the event
+            fetch(`https://api.vimeo.com${eventUri}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': 'Bearer 8f06302bf687ebf775a2e1de67f48b94'
+                }
+            }).then(response => {
+                if (response.ok) {
+                    console.log('Event stopped successfully');
+                    else
+                    console.error('Sorry, you cannot stop event, ask your vendor to fix this issue')
