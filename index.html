@@ -60,7 +60,7 @@
             margin: 10px 0 5px;
             color: #555;
         }
-        .form-container input, .form-container button {
+        .form-container input, .form-container button, .form-container select {
             width: 100%;
             padding: 10px;
             margin-bottom: 15px;
@@ -129,6 +129,13 @@
                 <input type="datetime-local" id="startTime" name="startTime" required>
                 <label for="videoUpload">Upload Video:</label>
                 <input type="file" id="videoUpload" name="videoUpload" accept="video/*" required>
+                <label for="tags">Tags:</label>
+                <select id="tags" name="tags" multiple required>
+                    <option value="Software">Software</option>
+                    <option value="Hardware">Hardware</option>
+                    <option value="Biblical">Biblical</option>
+                    <option value="Company Events">Company Events</option>
+                </select>
                 <button type="submit">Create Event</button>
             </form>
         </div>
@@ -141,6 +148,7 @@
                     <th>Description</th>
                     <th>Start Time</th>
                     <th>Video</th>
+                    <th>Tags</th>
                     <th>Edit</th>
                 </tr>
             </thead>
@@ -167,6 +175,8 @@
             const description = document.getElementById('description').value;
             const startTime = document.getElementById('startTime').value;
             const videoFile = document.getElementById('videoUpload').files[0];
+            const tagsSelect = document.getElementById('tags');
+            const tags = Array.from(tagsSelect.selectedOptions).map(option => option.value);
 
             // Upload video to server and get the URL
             const videoUrl = await uploadVideoToServer(videoFile);
@@ -182,7 +192,8 @@
                     name: title,
                     description: description,
                     start_time: startTime,
-                    video_url: videoUrl
+                    video_url: videoUrl,
+                    tags: tags.join(', ')
                 })
             });
 
@@ -201,6 +212,7 @@
                     <td>${description}</td>
                     <td>${startTime}</td>
                     <td><a href="${videoUrl}" target="_blank">Watch Video</a></td>
+                    <td>${tags.join(', ')}</td>
                     <td><button onclick="editVideo('${videoUrl}')">Edit</button></td>`;
                 eventsTableBody.appendChild(newRow);
             } else {
@@ -239,5 +251,3 @@
     </script>
 </body>
 </html>
-
-
