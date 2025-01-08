@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create and Watch Live Events anywhere: VectorStream</title>
+    <title>VectorStream: Live Events Without Leaving</title>
     <style>
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f4f4f4;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -18,26 +18,95 @@
         .container {
             width: 80%;
             margin: auto;
+            max-width: 1200px;
         }
         .video-frame {
             width: 100%;
             height: 500px;
             background-color: #000;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .event-list {
+            margin-top: 20px;
+            border-collapse: collapse;
+            width: 100%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .event-list th, .event-list td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .event-list th {
+            background-color: #007BFF;
+            color: white;
+            text-transform: uppercase;
+        }
+        .form-container {
+            margin-bottom: 20px;
+            padding: 30px;
+            background: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        .form-container h1 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #333;
+        }
+        .form-container label {
+            display: block;
+            margin: 10px 0 5px;
+            color: #555;
+        }
+        .form-container input, .form-container button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .form-container button {
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .form-container button:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Create Your Live Event: Vectorstream</h1>
-        <form id="liveEventForm">
-            <label for="title">Title:</label>
-            <input type="text" id="title" name="title" required><br><br>
-            <label for="description">Description:</label>
-            <input type="text" id="description" name="description" required><br><br>
-            <label for="startTime">Start Time:</label>
-            <input type="datetime-local" id="startTime" name="startTime" required><br><br>
-            <button type="submit">Create Event</button>
-        </form>
+        <div class="form-container">
+            <h1>Create Your Live Event</h1>
+            <form id="liveEventForm">
+                <label for="title">Title:</label>
+                <input type="text" id="title" name="title" required>
+                <label for="description">Description:</label>
+                <input type="text" id="description" name="description" required>
+                <label for="startTime">Start Time:</label>
+                <input type="datetime-local" id="startTime" name="startTime" required>
+                <button type="submit">Create Event</button>
+            </form>
+        </div>
+
+        <h2>Upcoming Events</h2>
+        <table class="event-list">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Start Time</th>
+                </tr>
+            </thead>
+            <tbody id="eventsTableBody">
+                <!-- Event rows will be added here dynamically -->
+            </tbody>
+        </table>
+
         <div id="videoContainer" class="video-frame"></div>
     </div>
 
@@ -53,7 +122,7 @@
             const response = await fetch('https://api.vimeo.com/me/events', {
                 method: 'POST',
                 headers: {
-                    'Authorization': 'Bearer 8f06302bf687ebf775a2e1de67f48b94',
+                    'Authorization': 'Bearer YOUR_ACCESS_TOKEN',
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
@@ -69,6 +138,12 @@
                 // Embed the live video player using the returned video ID
                 const videoContainer = document.getElementById('videoContainer');
                 videoContainer.innerHTML = `<iframe src="https://player.vimeo.com/video/${data.uri.split('/').pop()}" frameborder="0" allowfullscreen></iframe>`;
+                
+                // Add the event to the list
+                const eventsTableBody = document.getElementById('eventsTableBody');
+                const newRow = document.createElement('tr');
+                newRow.innerHTML = `<td>${title}</td><td>${description}</td><td>${startTime}</td>`;
+                eventsTableBody.appendChild(newRow);
             } else {
                 console.error('Error creating event:', data);
             }
@@ -76,3 +151,5 @@
     </script>
 </body>
 </html>
+
+
