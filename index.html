@@ -76,6 +76,44 @@
         .form-container button:hover {
             background-color: #0056b3;
         }
+        .chat-container {
+            margin-top: 20px;
+            width: 100%;
+            max-width: 600px;
+            background: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+        }
+        .chat-messages {
+            height: 300px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .chat-messages p {
+            margin: 5px 0;
+        }
+        #chatInput {
+            width: 80%;
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        #sendMessage {
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #sendMessage:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
@@ -112,6 +150,13 @@
         </table>
 
         <div id="videoContainer" class="video-frame"></div>
+
+        <div class="chat-container">
+            <h2>Live Chat</h2>
+            <div id="chatMessages" class="chat-messages"></div>
+            <input type="text" id="chatInput" placeholder="Type a message..." />
+            <button id="sendMessage">Send</button>
+        </div>
     </div>
 
     <script>
@@ -163,6 +208,24 @@
             }
         });
 
+        document.getElementById('sendMessage').addEventListener('click', function() {
+            const messageInput = document.getElementById('chatInput');
+            const message = messageInput.value;
+            if (message.trim()) {
+                const chatMessages = document.getElementById('chatMessages');
+                const newMessage = document.createElement('p');
+                newMessage.textContent = message;
+                chatMessages.appendChild(newMessage);
+                messageInput.value = '';
+            }
+        });
+
+        document.getElementById('chatInput').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                document.getElementById('sendMessage').click();
+            }
+        });
+
         async function uploadVideoToServer(file) {
             // Implement video upload logic here
             // For now, we'll return a placeholder URL
@@ -176,4 +239,5 @@
     </script>
 </body>
 </html>
+
 
