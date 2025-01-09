@@ -127,8 +127,6 @@
                 <input type="text" id="description" name="description" required>
                 <label for="startTime">Start Time:</label>
                 <input type="datetime-local" id="startTime" name="startTime" required>
-                <label for="videoUpload">Upload Video:</label>
-                <input type="file" id="videoUpload" name="videoUpload" accept="video/*" required>
                 <label for="tags">Tags:</label>
                 <select id="tags" name="tags" multiple required>
                     <option value="Software">Software</option>
@@ -148,9 +146,7 @@
                     <th>Title</th>
                     <th>Description</th>
                     <th>Start Time</th>
-                    <th>Video</th>
                     <th>Tags</th>
-                    <th>Edit</th>
                     <th>Stop</th>
                 </tr>
             </thead>
@@ -159,7 +155,9 @@
             </tbody>
         </table>
 
-        <div id="videoContainer" class="video-frame"></div>
+        <div id="videoContainer" class="video-frame">
+            <video id="liveVideo" autoplay muted></video>
+        </div>
 
         <div class="chat-container">
             <h2>Live Chat</h2>
@@ -176,13 +174,18 @@
             const title = document.getElementById('title').value;
             const description = document.getElementById('description').value;
             const startTime = document.getElementById('startTime').value;
-            const videoFile = document.getElementById('videoUpload').files[0];
             const tagsSelect = document.getElementById('tags');
             const tags = Array.from(tagsSelect.selectedOptions).map(option => option.value);
 
-            // Upload video to server and get the URL
-            const videoUrl = await uploadVideoToServer(videoFile);
-            
+            // Start the live video stream
+            const video = document.getElementById('liveVideo');
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                video.srcObject = stream;
+            } catch (err) {
+                console.error('Error accessing camera and microphone:', err);
+            }
+
             // Replace 'YOUR_ACCESS_TOKEN' with your actual Vimeo API access token
             const response = await fetch('https://api.vimeo.com/me/events', {
                 method: 'POST',
@@ -194,7 +197,6 @@
                     name: title,
                     description: description,
                     start_time: startTime,
-                    video_url: videoUrl,
                     tags: tags.join(', ')
                 })
             });
@@ -213,9 +215,7 @@
                     <td>${title}</td>
                     <td>${description}</td>
                     <td>${startTime}</td>
-                    <td><a href="${videoUrl}" target="_blank">Watch Video</a></td>
                     <td>${tags.join(', ')}</td>
-                    <td><button onclick="editVideo('${videoUrl}')">Edit</button></td>
                     <td><button onclick="stopEvent(this, '${data.uri}')">Stop</button></td>`;
                 eventsTableBody.appendChild(newRow);
             } else {
@@ -244,5 +244,11 @@
             }).then(response => {
                 if (response.ok) {
                     console.log('Event stopped successfully');
-                    else
-                    console.error('Sorry, you cannot stop event, ask your vendor to fix this issue')
+                } else {
+                    console.error('Sorry, you cannot stop event, ask your vendor to fix this issue');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
