@@ -127,6 +127,8 @@
                 <input type="text" id="description" name="description" required>
                 <label for="startTime">Start Time:</label>
                 <input type="datetime-local" id="startTime" name="startTime" required>
+                <label for="screenpalLink">ScreenPal Link:</label>
+                <input type="text" id="screenpalLink" name="screenpalLink" required>
                 <label for="tags">Tags:</label>
                 <select id="tags" name="tags" multiple required>
                     <option value="Software">Software</option>
@@ -146,6 +148,7 @@
                     <th>Title</th>
                     <th>Description</th>
                     <th>Start Time</th>
+                    <th>ScreenPal Link</th>
                     <th>Tags</th>
                     <th>Stop</th>
                 </tr>
@@ -156,7 +159,7 @@
         </table>
 
         <div id="videoContainer" class="video-frame">
-            <iframe id="youtubeEmbed" src="" frameborder="0" allowfullscreen></iframe>
+            <video id="liveVideo" autoplay muted></video>
         </div>
 
         <div class="chat-container">
@@ -174,15 +177,18 @@
             const title = document.getElementById('title').value;
             const description = document.getElementById('description').value;
             const startTime = document.getElementById('startTime').value;
+            const screenpalLink = document.getElementById('screenpalLink').value;
             const tagsSelect = document.getElementById('tags');
             const tags = Array.from(tagsSelect.selectedOptions).map(option => option.value);
 
-            // Schedule a live stream on YouTube via YouTube Studio and set its visibility to unlisted
-            const youtubeStreamURL = 'YOUR_SCHEDULED_YOUTUBE_LIVE_STREAM_URL';
-            
-            // Embed the YouTube live stream
-            const youtubeEmbed = document.getElementById('youtubeEmbed');
-            youtubeEmbed.src = `${youtubeStreamURL}?autoplay=1&mute=1`;
+            // Start the live video stream using WebRTC
+            const video = document.getElementById('liveVideo');
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                video.srcObject = stream;
+            } catch (err) {
+                console.error('Error accessing camera and microphone:', err);
+            }
 
             // Add the event to the list
             const eventsTableBody = document.getElementById('eventsTableBody');
@@ -191,26 +197,30 @@
                 <td>${title}</td>
                 <td>${description}</td>
                 <td>${startTime}</td>
+                <td><a href="${screenpalLink}" target="_blank">Watch Recording</a></td>
                 <td>${tags.join(', ')}</td>
-                <td><button onclick="stopEvent(this, '${youtubeStreamURL}')">Stop</button></td>`;
+                <td><button onclick="stopEvent(this)">Stop</button></td>`;
             eventsTableBody.appendChild(newRow);
         });
 
-        function stopEvent(button, youtubeStreamURL) {
+        function stopEvent(button) {
             // Remove the event from the list
             const row = button.parentNode.parentNode;
             row.parentNode.removeChild(row);
             
-            // Remove the live video player if it's the current event
-            const videoContainer = document.getElementById('videoContainer');
-            const iframeSrc = videoContainer.querySelector('iframe').src;
-            if (iframeSrc.includes(youtubeStreamURL)) {
-                videoContainer.innerHTML = '';
+            // Stop the live video stream
+            const video = document.getElementById('liveVideo');
+            if (video.srcObject) {
+                const tracks = video.srcObject.getTracks();
+                tracks.forEach(track => track.stop());
+                video.srcObject = null;
             }
 
-            // Optionally, stop the stream on YouTube Studio manually
-            console.log('Please stop the stream on YouTube Studio manually.');
+            // Clear the video container
+            const videoContainer = document.getElementById('videoContainer');
+            videoContainer.innerHTML = '<video id="liveVideo" autoplay muted></video>';
         }
     </script>
 </body>
 </html>
+
