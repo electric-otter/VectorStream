@@ -134,9 +134,39 @@
         #sendMessage:hover {
             background-color: #0056b3;
         }
+        /* Modal styles */
+        .modal {
+            display: block;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
+    <div id="discontinuedModal" class="modal">
+        <div class="modal-content">
+            <h2>Site Discontinued</h2>
+            <p>This site is no longer available due to maintenance issues, specifically issues making streams public, as of January 9, 2025.</p>
+            <p>Existing users are advised to download any necessary data and seek alternative services.</p>
+        </div>
+    </div>
     <div class="container">
         <div class="form-container">
             <h1>Create Your Live Event</h1>
@@ -201,18 +231,15 @@
             const tagsSelect = document.getElementById('tags');
             const tags = Array.from(tagsSelect.selectedOptions).map(option => option.value);
 
-            // Start the live video stream using WebRTC and make it public
             const video = document.getElementById('liveVideo');
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
                 video.srcObject = stream;
 
-                // Assuming you have a media server URL to publish the stream publicly
                 const mediaServerUrl = 'wss://your-media-server-url.com';
                 const peerConnection = new RTCPeerConnection();
                 stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
 
-                // Connect to the media server
                 const websocket = new WebSocket(mediaServerUrl);
                 websocket.onopen = () => {
                     peerConnection.createOffer().then(offer => {
@@ -230,7 +257,6 @@
                 console.error('Error accessing camera and microphone:', err);
             }
 
-            // Add the event to the list
             const eventsTableBody = document.getElementById('eventsTableBody');
             const newRow = document.createElement('tr');
             newRow.innerHTML = `
@@ -243,11 +269,9 @@
         });
 
         function stopEvent(button) {
-            // Remove the event from the list
             const row = button.parentNode.parentNode;
             row.parentNode.removeChild(row);
             
-            // Stop the live video stream
             const video = document.getElementById('liveVideo');
             if (video.srcObject) {
                 const tracks = video.srcObject.getTracks();
@@ -255,7 +279,9 @@
                 video.srcObject = null;
             }
 
-            // Clear the video container
             const videoContainer = document.getElementById('videoContainer');
             videoContainer.innerHTML = '<video id="liveVideo" autoplay muted></video>';
-            </script>
+        }
+    </script>
+</body>
+</html>
