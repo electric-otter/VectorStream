@@ -127,8 +127,6 @@
                 <input type="text" id="description" name="description" required>
                 <label for="startTime">Start Time:</label>
                 <input type="datetime-local" id="startTime" name="startTime" required>
-                <label for="screenpalLink">ScreenPal Link:</label>
-                <input type="text" id="screenpalLink" name="screenpalLink" required>
                 <label for="tags">Tags:</label>
                 <select id="tags" name="tags" multiple required>
                     <option value="Software">Software</option>
@@ -148,7 +146,6 @@
                     <th>Title</th>
                     <th>Description</th>
                     <th>Start Time</th>
-                    <th>ScreenPal Link</th>
                     <th>Tags</th>
                     <th>Stop</th>
                 </tr>
@@ -177,7 +174,6 @@
             const title = document.getElementById('title').value;
             const description = document.getElementById('description').value;
             const startTime = document.getElementById('startTime').value;
-            const screenpalLink = document.getElementById('screenpalLink').value;
             const tagsSelect = document.getElementById('tags');
             const tags = Array.from(tagsSelect.selectedOptions).map(option => option.value);
 
@@ -197,7 +193,6 @@
                 <td>${title}</td>
                 <td>${description}</td>
                 <td>${startTime}</td>
-                <td><a href="${screenpalLink}" target="_blank">Watch Recording</a></td>
                 <td>${tags.join(', ')}</td>
                 <td><button onclick="stopEvent(this)">Stop</button></td>`;
             eventsTableBody.appendChild(newRow);
@@ -223,4 +218,3 @@
     </script>
 </body>
 </html>
-
