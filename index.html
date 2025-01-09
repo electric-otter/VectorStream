@@ -26,6 +26,26 @@
             background-color: #000;
             border-radius: 10px;
             overflow: hidden;
+            position: relative;
+        }
+        .custom-video-controls {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 5px;
+            padding: 5px;
+        }
+        .custom-video-controls button {
+            background: none;
+            border: none;
+            color: white;
+            padding: 10px;
+            cursor: pointer;
         }
         .event-list {
             margin-top: 20px;
@@ -156,7 +176,11 @@
         </table>
 
         <div id="videoContainer" class="video-frame">
-            <video id="liveVideo" autoplay muted></video>
+            <video id="liveVideo" autoplay muted controls></video>
+            <div class="custom-video-controls">
+                <button id="playButton">Play</button>
+                <button id="pauseButton">Pause</button>
+            </div>
         </div>
 
         <div class="chat-container">
@@ -177,11 +201,31 @@
             const tagsSelect = document.getElementById('tags');
             const tags = Array.from(tagsSelect.selectedOptions).map(option => option.value);
 
-            // Start the live video stream using WebRTC
+            // Start the live video stream using WebRTC and make it public
             const video = document.getElementById('liveVideo');
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
                 video.srcObject = stream;
+
+                // Assuming you have a media server URL to publish the stream publicly
+                const mediaServerUrl = 'wss://your-media-server-url.com';
+                const peerConnection = new RTCPeerConnection();
+                stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
+
+                // Connect to the media server
+                const websocket = new WebSocket(mediaServerUrl);
+                websocket.onopen = () => {
+                    peerConnection.createOffer().then(offer => {
+                        peerConnection.setLocalDescription(offer);
+                        websocket.send(JSON.stringify({ type: 'offer', offer: offer }));
+                    });
+                };
+                websocket.onmessage = (event) => {
+                    const message = JSON.parse(event.data);
+                    if (message.type === 'answer') {
+                        peerConnection.setRemoteDescription(new RTCSessionDescription(message.answer));
+                    }
+                };
             } catch (err) {
                 console.error('Error accessing camera and microphone:', err);
             }
@@ -214,7 +258,4 @@
             // Clear the video container
             const videoContainer = document.getElementById('videoContainer');
             videoContainer.innerHTML = '<video id="liveVideo" autoplay muted></video>';
-        }
-    </script>
-</body>
-</html>
+            </script>
