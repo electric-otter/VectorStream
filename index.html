@@ -156,7 +156,7 @@
         </table>
 
         <div id="videoContainer" class="video-frame">
-            <video id="liveVideo" autoplay muted></video>
+            <iframe id="youtubeEmbed" src="" frameborder="0" allowfullscreen></iframe>
         </div>
 
         <div class="chat-container">
@@ -177,54 +177,26 @@
             const tagsSelect = document.getElementById('tags');
             const tags = Array.from(tagsSelect.selectedOptions).map(option => option.value);
 
-            // Start the live video stream
-            const video = document.getElementById('liveVideo');
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                video.srcObject = stream;
-            } catch (err) {
-                console.error('Error accessing camera and microphone:', err);
-            }
-
-            // Make the event public
-            // Replace 'YOUR_ACCESS_TOKEN' with your actual Vimeo API access token
-            const response = await fetch('https://api.vimeo.com/me/events', {
-                method: 'POST',
-                headers: {
-                    'Authorization': 'Bearer 8f06302bf687ebf775a2e1de67f48b94',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    name: title,
-                    description: description,
-                    start_time: startTime,
-                    tags: tags.join(', ')
-                })
-            });
-
-            const data = await response.json();
+            // Schedule a live stream on YouTube via YouTube Studio and set its visibility to unlisted
+            const youtubeStreamURL = 'YOUR_SCHEDULED_YOUTUBE_LIVE_STREAM_URL';
             
-            if (response.ok) {
-                // Embed the live video player using the returned video ID
-                const videoContainer = document.getElementById('videoContainer');
-                videoContainer.innerHTML = `<iframe src="https://player.vimeo.com/video/${data.uri.split('/').pop()}" frameborder="0" allowfullscreen></iframe>`;
-                
-                // Add the event to the list
-                const eventsTableBody = document.getElementById('eventsTableBody');
-                const newRow = document.createElement('tr');
-                newRow.innerHTML = `
-                    <td>${title}</td>
-                    <td>${description}</td>
-                    <td>${startTime}</td>
-                    <td>${tags.join(', ')}</td>
-                    <td><button onclick="stopEvent(this, '${data.uri}')">Stop</button></td>`;
-                eventsTableBody.appendChild(newRow);
-            } else {
-                console.error('Error creating event:', data);
-            }
+            // Embed the YouTube live stream
+            const youtubeEmbed = document.getElementById('youtubeEmbed');
+            youtubeEmbed.src = `${youtubeStreamURL}?autoplay=1&mute=1`;
+
+            // Add the event to the list
+            const eventsTableBody = document.getElementById('eventsTableBody');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td>${title}</td>
+                <td>${description}</td>
+                <td>${startTime}</td>
+                <td>${tags.join(', ')}</td>
+                <td><button onclick="stopEvent(this, '${youtubeStreamURL}')">Stop</button></td>`;
+            eventsTableBody.appendChild(newRow);
         });
 
-        function stopEvent(button, eventUri) {
+        function stopEvent(button, youtubeStreamURL) {
             // Remove the event from the list
             const row = button.parentNode.parentNode;
             row.parentNode.removeChild(row);
@@ -232,25 +204,13 @@
             // Remove the live video player if it's the current event
             const videoContainer = document.getElementById('videoContainer');
             const iframeSrc = videoContainer.querySelector('iframe').src;
-            if (iframeSrc.includes(eventUri.split('/').pop())) {
+            if (iframeSrc.includes(youtubeStreamURL)) {
                 videoContainer.innerHTML = '';
             }
 
-            // Optionally, send a request to the server to stop the event
-            fetch(`https://api.vimeo.com${eventUri}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': 'Bearer 8f06302bf687ebf775a2e1de67f48b94'
-                }
-            }).then(response => {
-                if (response.ok) {
-                    console.log('Event stopped successfully');
-                } else {
-                    console.error('Sorry, you cannot stop event, ask your vendor to fix this issue');
-                }
-            });
+            // Optionally, stop the stream on YouTube Studio manually
+            console.log('Please stop the stream on YouTube Studio manually.');
         }
     </script>
 </body>
 </html>
-
